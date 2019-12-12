@@ -1,0 +1,149 @@
+----- estruturas de dados-------
+
+estatisticas:
+int num_acessos
+int num_leituras_tot
+int num_escritas_tot
+int num_hits_t
+int num_misses_t
+int num_hits_escrita
+int num_hits_leitura
+int num_misses_escrita
+int num_misses_leitura
+
+
+MP{
+	bloco0: //cada um desse tem 4 células 
+	bloco1:
+	bloco2:
+	bloco3:
+	.
+	.
+	.
+	bloco31:
+}
+
+cache
+//acho q pode ser um dicionário
+//a chave é o tag/rótulo e o índice de cada célula dela 
+//as demais posições são dadas pelo deslocamento que vai de 00 a 11
+
+ ou pode ser uma struct:
+
+ já que temos que mostrar cada linha da cache que está o endereço
+ e que temos um contador em cada linha para ajudar na politica LFU, e que tem o bit de validade em cada linha
+ e o bit de escrita.
+
+ cache{
+ 	linha[2]: 00 a 11
+ 	tag[5]: //o tag tem o mesmo nº do endereço  por causa do map. associativo
+ 	deslocam:
+ 	contLFU[4]: //pode contar de 0 até no máximo 15 bits.
+ }
+
+--------------
+bloco{
+	nº do bloco[5]: //tag do bloco tem 5 bits
+	//um bloco terá 4 células
+	Celula celula1
+	Celula celula2
+	Celula celula3
+	Celula celula4
+}
+-------------------
+ou
+------------------------
+bloco[4] //onde cada posição do vetor é uma célula
+------------------------
+
+célula{
+	endereço[5]: //endereço string que tem no máximo 5 bits -> verificar se tem esse tamanho e transformar em binário
+	dado[8]:  //cabem 8 bits em cada célula da cache e tbm em cada célula da MP -> transformar em binário tbm ou ler binário
+}
+___________________________________________________________________________________________________________________________________
+menu:
+
+1-ler da memória
+2-escrever na memória
+3- estatisticas
+0-sair
+
+do{
+	if(op == 1){
+		num_acessos++
+		pede endereço
+		lê endereço
+		pega os 5 primeiros bits e salva em uma aux
+		pega os 2 ultimos bits e salva em aux2
+		percorre as linhas da cache
+			compara a tag da cache com essa aux
+			se for igual:		
+				verifica se bit validade == 1			
+					se sim: 
+						num_hits_leitura++;
+						senão:
+						num_misses_leitura++;
+						//o valor tem lixo. pegar na MP
+						continue;
+			se não: //não tá na cache
+					num_misses_leitura++
+					pega aux e procura na MP esse bloco
+					se tiver espaço vazio na cache: //primeira linha vazia que achar
+						traz uma cópia dele nesse espaço
+					senão:
+						aplica	LFU: pega a linha com menor valor do contLFU 
+						coloca o bloco ali //provável que tenha que copiar célula por calula num for
+			//depois que o bloco certo ta na cache, pega o dado;
+			pega aux2 e procura ela na linha da cache (pega deslocamento)
+						pega o dado dessa célula
+						printa dado
+						printa bloco
+						printa linha cache que está
+						// E ACHO QUE JÁ MOSTRA A CACHE E A MP INTEIRAS	
+	}
+	if(op == 2){
+			num_acessos++
+			pede endereço
+			lê endereço
+			pede dado
+			lê dado
+			pega os 5 primeiros bits do endereço e salva em uma aux
+			pega os 2 ultimos bits e salva em aux2
+			percorre linha por linha da cache
+				compara a tag da cache com essa aux
+				se for igual:		
+					num_hits_escrita++
+					usa aux2 pra achar a célula a mudar o dado
+					usa aux pra ir no bloco da mp
+					usa deslocam pra percorrar o bloco e escrever na célula.dado tbm
+					//ESCRITA EM AMBAS
+				se não: //não tá na cache
+						num_misses_escrita++
+						usa aux pra ir no bloco da mp
+						usa deslocam pra percorrer o bloco e escrever na célula.dado 
+						
+						//ja traz com o valor atualizado o bloco certo pra cache
+						se tiver espaço vazio na cache: //primeira linha vazia que achar
+							poe o bloco ali
+						senão:
+							aplica	LFU: pega a linha com menor valor do contLFU 
+							coloca o bloco ali //provável que tenha que copiar célula por calula num for		
+	}
+	if(op == 3){
+		print:
+			
+			num_misses_escrita
+			num_misses_leitura
+			num_hits_escrita 
+			num_hits_leitura
+			acessos totais: num_acessos // ou soma qtd de leituras totais + escritas totais
+			misses totais: num_misses_leitura + num_misses_escrita
+			hits totais: num_hits_escrita + num_hits_leitura
+			leituras totais: num_misses_leitura + num_hits_leitura
+			escritas totais: num_hits_escrita + num_misses_escrita  
+	}
+
+}while(op != 0);
+
+
+
